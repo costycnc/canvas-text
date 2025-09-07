@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Text con Download Font e PNG</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  label { display: block; margin-top: 10px; }
+  canvas { border: 1px solid #000; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h2>Canvas Text con Download</h2>
+
+<label>
+  X (orizzontale):
+  <input type="range" id="sliderX" min="0" max="2000" value="50">
+</label>
+
+<label>
+  Y (verticale):
+  <input type="range" id="sliderY" min="0" max="1200" value="100">
+</label>
+
+<label>
+  Testo:
+  <input type="text" id="litera" value="TESTO">
+</label>
+
+<button id="downloadPNG">Scarica PNG</button>
+<button id="downloadFont">Scarica Font</button>
+
+<canvas id="myCanvas" width="2000" height="1200"></canvas>
+
+<!-- Font Base64 -->
+<textarea id="fontBase64" style="display:none">
+AAEAAAATAQAABAAwR1BPU...
+</textarea>
+
+<script>
+// canvas setup
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+ctx.textBaseline = "top";
+ctx.lineWidth = 10;
+ctx.lineJoin = "round";
+ctx.lineCap = "round";
+
+// elementi
+var sliderX = document.getElementById("sliderX");
+var sliderY = document.getElementById("sliderY");
+var inputText = document.getElementById("litera");
+var fontBase64 = document.getElementById("fontBase64").value.trim();
+
+// aggiungi font Base64 dinamicamente
+var style = document.createElement("style");
+style.innerHTML = `
+@font-face {
+  font-family: 'Costy';
+  src: url("data:font/opentype;base64,${fontBase64}") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+`;
+document.head.appendChild(style);
+
+// disegno testo
+function drawText() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var value = inputText.value;
+    var posX = parseInt(sliderX.value);
+    var posY = parseInt(sliderY.value);
+
+    ctx.font = "150px 'Costy'";
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = "white";
+
+    ctx.strokeText(value, posX, posY);
+    ctx.fillText(value, posX, posY);
+}
+
+// eventi
+sliderX.addEventListener("input", drawText);
+sliderY.addEventListener("input", drawText);
+inputText.addEventListener("input", drawText);
+
+// download PNG
+document.getElementById("downloadPNG").addEventListener("click", function(){
+    var link = document.createElement("a");
+    link.download = "canvas.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+});
+
+// download font Base64
+document.getElementById("downloadFont").addEventListener("click", function(){
+    var blob = new Blob([fontBase64], {type: "text/plain"});
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "font-base64.txt";
+    link.click();
+});
+
+// disegno iniziale
+drawText();
+</script>
+
+</body>
+</html>
